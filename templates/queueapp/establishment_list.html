@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Établissements | SmartQueue Sénégal{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="wrap">
+    <span class="eyebrow">Réseau SmartQueue</span>
+    <h1>Trouvez votre service</h1>
+    <p class="lead">Choisissez un établissement et rejoignez sa file d'attente en quelques secondes.</p>
+
+    <form class="filterbar" method="get" role="search">
+      {% if selected_category %}<input type="hidden" name="categorie" value="{{ selected_category }}">{% endif %}
+      <label class="input-icon">
+        <svg class="i"><use href="#i-search"/></svg>
+        <span class="sr-only">Ville</span>
+        <input name="ville" value="{{ city }}" placeholder="Rechercher une ville : Dakar, Thiès, Saint-Louis…" autocomplete="address-level2">
+      </label>
+      <button class="btn btn--primary" type="submit">Rechercher</button>
+    </form>
+
+    <div class="chips" role="list" aria-label="Filtrer par catégorie">
+      <a role="listitem" class="chip {% if not selected_category %}is-active{% endif %}" href="?{% if city %}ville={{ city|urlencode }}{% endif %}">Tous</a>
+      {% for value, label in categories %}
+        <a role="listitem" class="chip {% if selected_category == value %}is-active{% endif %}" href="?categorie={{ value }}{% if city %}&ville={{ city|urlencode }}{% endif %}">
+          {% include "partials/cat_icon.html" with cat=value size="xs" %}{{ label }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="wrap section section--tight">
+  <div class="result-bar">
+    <p><strong>{{ establishments|length }}</strong> établissement{{ establishments|length|pluralize }}{% if city %} à « {{ city }} »{% endif %}</p>
+    {% if city or selected_category %}<a class="link-muted" href="{% url 'establishment_list' %}"><svg class="i"><use href="#i-x"/></svg>Effacer les filtres</a>{% endif %}
+  </div>
+
+  {% if establishments %}
+    <div class="place-grid">
+      {% for establishment in establishments %}{% include "partials/place_card.html" with e=establishment %}{% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <span class="empty__icon"><svg class="i"><use href="#i-search"/></svg></span>
+      <h3>Aucun résultat</h3>
+      <p>Essayez une autre catégorie ou une autre ville.</p>
+      <a class="btn btn--light" href="{% url 'establishment_list' %}">Voir tous les établissements</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Gestion des files | SmartQueue{% endblock %}
+{% block content %}
+<section class="page-head page-head--compact page-head--staff">
+  <div class="wrap page-head__row">
+    <div>
+      <span class="eyebrow">Espace du personnel</span>
+      <h1>Gestion des files</h1>
+    </div>
+    <form method="get" class="site-picker">
+      <label for="etablissement" class="sr-only">Établissement</label>
+      <span class="site-picker__icon"><svg class="i"><use href="#i-building"/></svg></span>
+      <select name="etablissement" id="etablissement" onchange="this.form.submit()">
+        <option value="">Choisir un établissement…</option>
+        {% for etablissement in etablissements %}
+          <option value="{{ etablissement.id }}" {% if etablissement_id|stringformat:"s" == etablissement.id|stringformat:"s" %}selected{% endif %}>{{ etablissement.name }} — {{ etablissement.city }}</option>
+        {% endfor %}
+      </select>
+      <noscript><button class="btn btn--primary btn--sm" type="submit">Afficher</button></noscript>
+    </form>
+  </div>
+</section>
+
+<div class="wrap section section--tight">
+{% if not etablissement_id %}
+  <div class="empty">
+    <span class="empty__icon"><svg class="i"><use href="#i-dashboard"/></svg></span>
+    <h3>Sélectionnez un établissement</h3>
+    <p>Choisissez l'établissement dont vous gérez la file pour afficher le guichet et les statistiques.</p>
+  </div>
+{% else %}
+
+  <div class="desk">
+    <section class="serving">
+      <div class="serving__now">
+        <span class="eyebrow eyebrow--light">Au guichet</span>
+        {% if dernier_appele %}
+          <strong class="serving__num">T{{ dernier_appele.number|stringformat:"03d" }}</strong>
+          <small>{{ dernier_appele.user.get_full_name|default:dernier_appele.user.username }} · appelé à {{ dernier_appele.called_at|date:"H:i" }}</small>
+        {% else %}
+          <strong class="serving__num serving__num--empty">—</strong>
+          <small>Aucun ticket appelé</small>
+        {% endif %}
+      </div>
+      <form method="post" class="serving__action">
+        {% csrf_token %}
+        <input type="hidden" name="establishment_id" value="{{ etablissement_id }}">
+        <input type="hidden" name="action" value="appeler">
+        <button class="btn btn--sun btn--xl btn--block" type="submit" {% if not prochain %}disabled{% endif %}>
+          <svg class="i"><use href="#i-megaphone"/></svg>
+          {% if prochain %}Appeler T{{ prochain.number|stringformat:"03d" }}{% else %}File vide{% endif %}
+        </button>
+        <small>{% if prochain %}Prochain : {{ prochain.user.get_full_name|default:prochain.user.username }}{% else %}Aucun ticket en attente{% endif %}</small>
+      </form>
+    </section>
+
+    <section class="card stats-card">
+      <div class="stats-card__head">
+        <h2 class="h3">{{ etablissement_courant.name }}</h2>
+        <a class="link-muted" href="?etablissement={{ etablissement_id }}"><svg class="i"><use href="#i-refresh"/></svg>Actualiser</a>
+      </div>
+      <div class="stat-tiles">
+        <div class="stat-tile"><small>Total</small><strong>{{ statistiques.total }}</strong></div>
+        <div class="stat-tile"><small><i class="sw sw--en_attente"></i>En attente</small><strong>{{ statistiques.en_attente }}</strong></div>
+        <div class="stat-tile"><small><i class="sw sw--appele"></i>Appelés</small><strong>{{ statistiques.appeles }}</strong></div>
+        <div class="stat-tile"><small><i class="sw sw--termine"></i>Terminés</small><strong>{{ statistiques.termines }}</strong></div>
+      </div>
+      {% if repartition %}
+        <div class="split" role="img" aria-label="Répartition des tickets par statut">
+          {% for s in repartition %}{% if s.count %}<span class="split__seg sw--{{ s.key }}" style="flex-grow:{{ s.count }}" title="{{ s.label }} : {{ s.count }} ({{ s.pct }} %)"></span>{% endif %}{% endfor %}
+        </div>
+        <ul class="split__legend">
+          {% for s in repartition %}<li><i class="sw sw--{{ s.key }}"></i>{{ s.label }} <b>{{ s.count }}</b> <span>{{ s.pct }} %</span></li>{% endfor %}
+        </ul>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="queues">
+    <section class="card">
+      <div class="card__head">
+        <h2 class="h3">File d'attente</h2>
+        <span class="count">{{ tickets_attente|length }}</span>
+      </div>
+      <div class="list list--flush">
+        {% for ticket in tickets_attente %}
+          <div class="row {% if forloop.first %}is-next{% endif %}">
+            <span class="row__badge">T{{ ticket.number|stringformat:"03d" }}</span>
+            <span class="row__info">
+              <strong>{{ ticket.user.get_full_name|default:ticket.user.username }}</strong>
+              <small>Pris le {{ ticket.created_at|date:"d/m à H:i" }}</small>
+            </span>
+            {% if forloop.first %}<span class="pill pill--next">Suivant</span>{% else %}<span class="row__pos">#{{ forloop.counter }}</span>{% endif %}
+          </div>
+        {% empty %}
+          <div class="empty empty--inline"><p>Aucun ticket en attente.</p></div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__head">
+        <h2 class="h3">En cours de traitement</h2>
+        <span class="count">{{ tickets_appeles|length }}</span>
+      </div>
+      <div class="list list--flush">
+        {% for ticket in tickets_appeles %}
+          <div class="row row--action">
+            <span class="row__badge row__badge--called">T{{ ticket.number|stringformat:"03d" }}</span>
+            <span class="row__info">
+              <strong>{{ ticket.user.get_full_name|default:ticket.user.username }}</strong>
+              <small>Appelé à {{ ticket.called_at|date:"H:i" }}</small>
+            </span>
+            <form method="post" class="row__actions">
+              {% csrf_token %}
+              <input type="hidden" name="establishment_id" value="{{ etablissement_id }}">
+              <input type="hidden" name="ticket_id" value="{{ ticket.pk }}">
+              <button class="btn btn--primary btn--sm" type="submit" name="action" value="terminer"><svg class="i"><use href="#i-check"/></svg>Terminer</button>
+              <button class="btn btn--danger-ghost btn--sm" type="submit" name="action" value="annuler" aria-label="Annuler le ticket T{{ ticket.number|stringformat:'03d' }}"><svg class="i"><use href="#i-x"/></svg><span class="hide-mobile">Annuler</span></button>
+            </form>
+          </div>
+        {% empty %}
+          <div class="empty empty--inline"><p>Aucun ticket appelé actuellement.</p></div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+{% endif %}
+</div>
+{% endblock %}

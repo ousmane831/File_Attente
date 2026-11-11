@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}SmartQueue Sénégal — Faites la file autrement{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="wrap hero__grid">
+    <div class="hero__copy">
+      <span class="live-pill"><span class="live-pill__dot"></span>{{ waiting_count }} ticket{{ waiting_count|pluralize }} en attente en ce moment</span>
+      <h1 class="display">Votre temps est précieux.<br><em>Faites la file autrement.</em></h1>
+      <p class="lead">Prenez votre ticket en ligne pour l'hôpital, la banque ou l'administration, suivez votre position en direct et arrivez juste à temps.</p>
+
+      <form class="searchbar" method="get" action="{% url 'establishment_list' %}" role="search">
+        <label class="searchbar__field">
+          <svg class="i"><use href="#i-pin"/></svg>
+          <span class="sr-only">Ville</span>
+          <input name="ville" placeholder="Votre ville : Dakar, Thiès…" autocomplete="address-level2">
+        </label>
+        <label class="searchbar__field searchbar__field--select">
+          <svg class="i"><use href="#i-grid"/></svg>
+          <span class="sr-only">Catégorie</span>
+          <select name="categorie">
+            <option value="">Tous les services</option>
+            {% for value, label in categories %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+          </select>
+        </label>
+        <button class="btn btn--primary btn--lg" type="submit"><svg class="i"><use href="#i-search"/></svg>Rechercher</button>
+      </form>
+
+      <ul class="trust">
+        <li><svg class="i"><use href="#i-check"/></svg>Gratuit</li>
+        <li><svg class="i"><use href="#i-check"/></svg>Sans application à installer</li>
+        <li><svg class="i"><use href="#i-check"/></svg>Suivi en direct</li>
+      </ul>
+    </div>
+
+    <div class="hero__visual" aria-hidden="true">
+      <div class="phone">
+        <div class="phone__screen">
+          <div class="phone__bar"><span>9:41</span><span class="phone__notch"></span><span>●●●</span></div>
+          <p class="phone__hello">Bonjour Awa,</p>
+          <p class="phone__title">Votre ticket</p>
+          <div class="pass pass--mini">
+            <div class="pass__head">
+              <span class="pass__org">{% include "partials/cat_icon.html" with cat="hopital" size="sm" %}Hôpital Principal</span>
+              <span class="pill pill--appele pill--on-dark">En attente</span>
+            </div>
+            <div class="pass__body">
+              <small>Numéro</small>
+              <strong class="pass__number">T024</strong>
+            </div>
+            <div class="pass__tear"></div>
+            <div class="pass__foot">
+              <div><small>Position</small><strong>3<sup>e</sup></strong></div>
+              <div><small>Devant vous</small><strong>2</strong></div>
+              <div><small>Pris à</small><strong>08:42</strong></div>
+            </div>
+          </div>
+          <div class="phone__progress"><span style="width:72%"></span></div>
+          <p class="phone__hint">Vous serez notifié quand ce sera votre tour</p>
+        </div>
+      </div>
+      <div class="float-note float-note--a"><span class="float-note__icon"><svg class="i"><use href="#i-bell"/></svg></span><div><strong>C'est bientôt à vous</strong><small>Plus que 2 personnes</small></div></div>
+      <div class="float-note float-note--b"><span class="float-note__icon float-note__icon--sun"><svg class="i"><use href="#i-clock"/></svg></span><div><strong>Fini l'attente debout</strong><small>Arrivez au bon moment</small></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap section">
+  <div class="cat-grid">
+    {% for value, label in categories %}
+    <a class="cat-tile" href="{% url 'establishment_list' %}?categorie={{ value }}">
+      {% include "partials/cat_icon.html" with cat=value %}
+      <span>{{ label }}</span>
+      <svg class="i cat-tile__arrow"><use href="#i-chevron-right"/></svg>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="kpis">
+    <div class="kpi"><span class="kpi__icon"><svg class="i"><use href="#i-building"/></svg></span><div><strong>{{ establishment_count }}</strong><span>Établissements actifs</span></div></div>
+    <div class="kpi"><span class="kpi__icon kpi__icon--sun"><svg class="i"><use href="#i-users"/></svg></span><div><strong>{{ waiting_count }}</strong><span>Tickets en attente</span></div></div>
+    <div class="kpi"><span class="kpi__icon kpi__icon--info"><svg class="i"><use href="#i-clock"/></svg></span><div><strong>24h/24</strong><span>Prise de ticket en ligne</span></div></div>
+  </div>
+</section>
+
+<section class="wrap section">
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">À proximité de vous</span>
+      <h2>Choisissez votre service</h2>
+    </div>
+    <a class="link-arrow" href="{% url 'establishment_list' %}">Tout voir <svg class="i"><use href="#i-arrow-right"/></svg></a>
+  </div>
+  {% if establishments %}
+    <div class="place-grid place-grid--scroll">
+      {% for establishment in establishments %}{% include "partials/place_card.html" with e=establishment %}{% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <span class="empty__icon"><svg class="i"><use href="#i-building"/></svg></span>
+      <h3>Aucun établissement pour le moment</h3>
+      <p>Ajoutez des établissements depuis l'administration Django.</p>
+    </div>
+  {% endif %}
+</section>
+
+<section class="wrap section">
+  <div class="how">
+    <div class="how__head">
+      <span class="eyebrow eyebrow--light">Comment ça marche ?</span>
+      <h2>Trois étapes, zéro file debout.</h2>
+    </div>
+    <ol class="steps">
+      <li><span class="steps__icon"><svg class="i"><use href="#i-search"/></svg></span><b>01</b><h3>Choisissez</h3><p>Trouvez l'hôpital, la banque ou le service dont vous avez besoin.</p></li>
+      <li><span class="steps__icon"><svg class="i"><use href="#i-ticket"/></svg></span><b>02</b><h3>Prenez un ticket</h3><p>Un numéro vous est attribué instantanément, sans vous déplacer.</p></li>
+      <li><span class="steps__icon"><svg class="i"><use href="#i-bell"/></svg></span><b>03</b><h3>Suivez votre tour</h3><p>Consultez votre position en direct et présentez-vous au bon moment.</p></li>
+    </ol>
+  </div>
+</section>
+
+{% if not user.is_authenticated %}
+<section class="wrap section">
+  <div class="cta-band">
+    <div>
+      <h2>Prêt à gagner du temps ?</h2>
+      <p>Créez votre compte en moins d'une minute et prenez votre premier ticket.</p>
+    </div>
+    <div class="cta-band__actions">
+      <a class="btn btn--sun btn--lg" href="{% url 'register' %}">Créer mon compte</a>
+      <a class="btn btn--outline-light btn--lg" href="{% url 'login' %}">J'ai déjà un compte</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

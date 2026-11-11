@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Inscription | SmartQueue Sénégal{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="auth">
+    {% include "registration/_auth_aside.html" %}
+    <section class="auth__form">
+      <span class="eyebrow">Rejoignez SmartQueue</span>
+      <h1>Créer un compte</h1>
+      <p class="lead">Gratuit, et prêt en moins d'une minute.</p>
+
+      <form method="post" class="form-grid" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="form-alert"><svg class="i"><use href="#i-alert"/></svg>{{ form.non_field_errors|join:" " }}</div>
+        {% endif %}
+        {% for field in form %}
+          <div class="field field--{{ field.name }}{% if field.errors %} has-error{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<small class="field__error">{{ error }}</small>{% endfor %}
+            {% if field.help_text and not field.errors %}<details class="field__help"><summary>Conseils</summary>{{ field.help_text|safe }}</details>{% endif %}
+          </div>
+        {% endfor %}
+        <button class="btn btn--primary btn--lg btn--block" type="submit">Créer mon compte</button>
+      </form>
+      <p class="auth__switch">Vous avez déjà un compte ? <a href="{% url 'login' %}">Se connecter</a></p>
+    </section>
+  </div>
+</div>
+{% endblock %}

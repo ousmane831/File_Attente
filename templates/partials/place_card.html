@@ -1,0 +1,12 @@
+<a class="place" href="{% url 'establishment_detail' e.pk %}">
+  <div class="place__top">
+    {% include "partials/cat_icon.html" with cat=e.category %}
+    <span class="queue-badge {% if e.waiting_now %}is-busy{% else %}is-free{% endif %}">
+      <span class="dot"></span>{% if e.waiting_now %}{{ e.waiting_now }} en attente{% else %}Pas d'attente{% endif %}
+    </span>
+  </div>
+  <span class="place__cat">{{ e.get_category_display }}</span>
+  <h3 class="place__name">{{ e.name }}</h3>
+  <p class="place__loc"><svg class="i"><use href="#i-pin"/></svg><span>{{ e.city }}{% if e.address %} · {{ e.address }}{% endif %}</span></p>
+  <span class="place__cta">Prendre un ticket <svg class="i"><use href="#i-arrow-right"/></svg></span>
+</a>

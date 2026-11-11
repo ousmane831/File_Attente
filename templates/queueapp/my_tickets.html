@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Mes tickets | SmartQueue Sénégal{% endblock %}
+{% block content %}
+<section class="page-head page-head--compact">
+  <div class="wrap page-head__row">
+    <div>
+      <span class="eyebrow">Espace personnel</span>
+      <h1>Mes tickets</h1>
+    </div>
+    <a class="btn btn--primary hide-mobile" href="{% url 'establishment_list' %}"><svg class="i"><use href="#i-ticket"/></svg>Nouveau ticket</a>
+  </div>
+</section>
+
+<div class="wrap section section--tight">
+  {% if not tickets %}
+    <div class="empty">
+      <span class="empty__icon"><svg class="i"><use href="#i-ticket"/></svg></span>
+      <h3>Vous n'avez pas encore de ticket</h3>
+      <p>Choisissez un établissement pour prendre votre premier ticket.</p>
+      <a class="btn btn--primary" href="{% url 'establishment_list' %}">Voir les établissements</a>
+    </div>
+  {% else %}
+
+    <h2 class="list-title">En cours <span class="count">{{ active_tickets|length }}</span></h2>
+    {% if active_tickets %}
+      <div class="active-grid">
+        {% for t in active_tickets %}
+        <a class="active-ticket {% if t.status == 'appele' %}is-called{% endif %}" href="{% url 'ticket_detail' t.pk %}">
+          <div class="active-ticket__top">
+            <span class="active-ticket__org">{% include "partials/cat_icon.html" with cat=t.establishment.category size="sm" %}{{ t.establishment.name }}</span>
+            <span class="pill pill--{{ t.status }}">{{ t.get_status_display }}</span>
+          </div>
+          <div class="active-ticket__mid">
+            <strong class="active-ticket__num">T{{ t.number|stringformat:"03d" }}</strong>
+            {% if t.status == 'appele' %}
+              <div class="active-ticket__pos"><small>C'est à vous</small><strong>Au guichet</strong></div>
+            {% else %}
+              {% with pos=t.position %}<div class="active-ticket__pos"><small>Position</small><strong>{{ pos }}<sup>{% if pos == 1 %}er{% else %}e{% endif %}</sup></strong></div>{% endwith %}
+            {% endif %}
+          </div>
+          <div class="active-ticket__foot">
+            <span><svg class="i"><use href="#i-clock"/></svg>Pris le {{ t.created_at|date:"d/m à H:i" }}</span>
+            <span class="link-arrow">Suivre <svg class="i"><use href="#i-arrow-right"/></svg></span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty empty--inline">
+        <p>Aucun ticket en cours.</p>
+        <a class="link-arrow" href="{% url 'establishment_list' %}">Prendre un ticket <svg class="i"><use href="#i-arrow-right"/></svg></a>
+      </div>
+    {% endif %}
+
+    {% if past_tickets %}
+      <h2 class="list-title">Historique <span class="count">{{ past_tickets|length }}</span></h2>
+      <div class="list">
+        {% for t in past_tickets %}
+        <a class="row" href="{% url 'ticket_detail' t.pk %}">
+          <span class="row__badge">T{{ t.number|stringformat:"03d" }}</span>
+          <span class="row__info">
+            <strong>{{ t.establishment.name }}</strong>
+            <small>{{ t.establishment.city }} · {{ t.created_at|date:"d/m/Y à H:i" }}</small>
+          </span>
+          <span class="pill pill--{{ t.status }}">{{ t.get_status_display }}</span>
+          <svg class="i row__chev"><use href="#i-chevron-right"/></svg>
+        </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

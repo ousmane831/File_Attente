@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Connexion | SmartQueue Sénégal{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="auth">
+    {% include "registration/_auth_aside.html" %}
+    <section class="auth__form">
+      <span class="eyebrow">Ravi de vous revoir</span>
+      <h1>Connexion</h1>
+      <p class="lead">Connectez-vous pour prendre et suivre vos tickets.</p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        {% if form.non_field_errors or form.errors %}
+          <div class="form-alert"><svg class="i"><use href="#i-alert"/></svg>Nom d'utilisateur ou mot de passe incorrect.</div>
+        {% endif %}
+        {% for field in form %}
+          <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+          </div>
+        {% endfor %}
+        <button class="btn btn--primary btn--lg btn--block" type="submit">Se connecter</button>
+      </form>
+      <p class="auth__switch">Pas encore de compte ? <a href="{% url 'register' %}">Créer un compte</a></p>
+    </section>
+  </div>
+</div>
+{% endblock %}

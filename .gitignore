@@ -1,0 +1,35 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Environnements virtuels ---
+env/
+venv/
+.venv/
+ENV/
+
+# --- Django ---
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+*.log
+
+# --- Secrets / variables d'environnement ---
+.env
+.env.*
+!.env.example
+
+# --- Sauvegarde locale de l'ancien design ---
+backup_ancien_design/
+
+# --- Éditeurs / IDE ---
+.vscode/
+.idea/
+*.swp
+
+# --- Systèmes d'exploitation ---
+Thumbs.db
+desktop.ini
+.DS_Store

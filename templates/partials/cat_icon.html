@@ -1,0 +1,1 @@
+<span class="cat-icon cat-icon--{{ cat|default:'autre' }}{% if size %} cat-icon--{{ size }}{% endif %}" aria-hidden="true"><svg class="i"><use href="#{% if cat == 'hopital' %}i-hospital{% elif cat == 'banque' %}i-bank{% elif cat == 'administration' %}i-building{% else %}i-grid{% endif %}"/></svg></span>

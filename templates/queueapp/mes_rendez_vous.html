@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Mes rendez-vous | SmartQueue Sénégal{% endblock %}
+{% block content %}
+<section class="page-head page-head--compact">
+  <div class="wrap">
+    <span class="eyebrow">Espace personnel</span>
+    <h1>Mes rendez-vous</h1>
+    <p class="lead">Vos rendez-vous planifiés et leur statut en temps réel.</p>
+  </div>
+</section>
+
+<div class="wrap section section--tight">
+  {% if rendez_vous %}
+    <div class="list">
+      {% for rv in rendez_vous %}
+      <article class="rdv">
+        <div class="rdv__date">
+          <small>{{ rv.date_heure|date:"D" }}</small>
+          <strong>{{ rv.date_heure|date:"d" }}</strong>
+          <small>{{ rv.date_heure|date:"M" }}</small>
+        </div>
+        <div class="rdv__body">
+          <div class="rdv__top">
+            <h3>{{ rv.establishment.name }}</h3>
+            <span class="pill pill--rdv-{{ rv.statut }}">{{ rv.get_statut_display }}</span>
+          </div>
+          <p class="rdv__meta">
+            <span><svg class="i"><use href="#i-clock"/></svg>{{ rv.date_heure|date:"H:i" }}</span>
+            <span><svg class="i"><use href="#i-pin"/></svg>{{ rv.establishment.city }}</span>
+          </p>
+          {% if rv.message_retard %}
+            <p class="rdv__msg"><svg class="i"><use href="#i-info"/></svg>{{ rv.message_retard }}</p>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <span class="empty__icon"><svg class="i"><use href="#i-calendar"/></svg></span>
+      <h3>Aucun rendez-vous pour le moment</h3>
+      <p>Vos rendez-vous programmés par un établissement apparaîtront ici.</p>
+      <a class="btn btn--light" href="{% url 'establishment_list' %}">Explorer les établissements</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

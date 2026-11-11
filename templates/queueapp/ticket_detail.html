@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Ticket T{{ ticket.number|stringformat:"03d" }} | SmartQueue{% endblock %}
+{% block head %}{% if ticket.status == "en_attente" or ticket.status == "appele" %}<meta http-equiv="refresh" content="30">{% endif %}{% endblock %}
+{% block content %}
+{% with pos=ticket.position st=ticket.status %}
+<div class="wrap ticket-page">
+  <a class="back-link" href="{% url 'my_tickets' %}"><svg class="i"><use href="#i-arrow-left"/></svg>Mes tickets</a>
+
+  <div class="ticket-layout">
+    <div>
+      {% if st == "appele" %}
+        <div class="callout callout--called">
+          <span class="callout__icon"><svg class="i"><use href="#i-megaphone"/></svg></span>
+          <div><strong>C'est votre tour !</strong><p>Présentez-vous au guichet avec votre numéro.</p></div>
+        </div>
+      {% elif st == "en_attente" and pos == 1 %}
+        <div class="callout callout--soon">
+          <span class="callout__icon"><svg class="i"><use href="#i-bell"/></svg></span>
+          <div><strong>Vous êtes le prochain</strong><p>Rapprochez-vous du guichet.</p></div>
+        </div>
+      {% endif %}
+
+      <article class="pass pass--{{ st }}">
+        <div class="pass__head">
+          <span class="pass__org">{% include "partials/cat_icon.html" with cat=ticket.establishment.category size="sm" %}<span>{{ ticket.establishment.name }}<small>{{ ticket.establishment.city }}</small></span></span>
+          <span class="pill pill--{{ st }} pill--on-dark">{{ ticket.get_status_display }}</span>
+        </div>
+        <div class="pass__body">
+          <small>Votre numéro</small>
+          <strong class="pass__number">T{{ ticket.number|stringformat:"03d" }}</strong>
+          {% if st == "en_attente" %}
+            <div class="pass__position">
+              <span class="pass__ring"><strong>{{ pos }}</strong><small>{% if pos == 1 %}er{% else %}e{% endif %}</small></span>
+              <div>
+                <strong>Position dans la file</strong>
+                <small>{% if pos == 1 %}Personne devant vous{% else %}{{ pos|add:"-1" }} personne{{ pos|add:"-1"|pluralize }} devant vous{% endif %}</small>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        <div class="pass__tear"></div>
+        <div class="pass__foot">
+          <div><small>Date</small><strong>{{ ticket.created_at|date:"d/m/Y" }}</strong></div>
+          <div><small>Pris à</small><strong>{{ ticket.created_at|date:"H:i" }}</strong></div>
+          <div><small>{% if ticket.called_at %}Appelé à{% else %}Titulaire{% endif %}</small><strong>{% if ticket.called_at %}{{ ticket.called_at|date:"H:i" }}{% else %}{{ ticket.user.first_name|default:ticket.user.username }}{% endif %}</strong></div>
+        </div>
+      </article>
+
+      {% if st == "en_attente" or st == "appele" %}
+        <p class="refresh-note"><svg class="i"><use href="#i-refresh"/></svg>Mise à jour automatique toutes les 30 s · <a href="{{ request.path }}">Actualiser</a></p>
+      {% endif %}
+    </div>
+
+    <aside class="card timeline-card">
+      <h2 class="h3">Suivi du ticket</h2>
+      <ol class="timeline">
+        <li class="is-done"><span class="timeline__dot"><svg class="i"><use href="#i-check"/></svg></span><div><strong>Ticket créé</strong><small>{{ ticket.created_at|date:"d/m/Y à H:i" }}</small></div></li>
+        {% if st == "annule" %}
+          <li class="is-cancel"><span class="timeline__dot"><svg class="i"><use href="#i-x"/></svg></span><div><strong>Ticket annulé</strong><small>Ce ticket n'est plus valable</small></div></li>
+        {% else %}
+          <li class="{% if st == 'en_attente' %}is-current{% else %}is-done{% endif %}"><span class="timeline__dot">{% if st != 'en_attente' %}<svg class="i"><use href="#i-check"/></svg>{% endif %}</span><div><strong>Dans la file</strong><small>{% if st == 'en_attente' %}Position actuelle : {{ pos }}{% else %}Attente terminée{% endif %}</small></div></li>
+          <li class="{% if st == 'appele' %}is-current{% elif st == 'termine' %}is-done{% endif %}"><span class="timeline__dot">{% if st == 'termine' %}<svg class="i"><use href="#i-check"/></svg>{% endif %}</span><div><strong>Appelé au guichet</strong><small>{% if ticket.called_at %}{{ ticket.called_at|date:"d/m/Y à H:i" }}{% else %}En attente d'appel{% endif %}</small></div></li>
+          <li class="{% if st == 'termine' %}is-done{% endif %}"><span class="timeline__dot">{% if st == 'termine' %}<svg class="i"><use href="#i-check"/></svg>{% endif %}</span><div><strong>Passage terminé</strong><small>{% if st == 'termine' %}Merci de votre visite{% else %}—{% endif %}</small></div></li>
+        {% endif %}
+      </ol>
+      <div class="stack-actions">
+        <a href="{% url 'establishment_detail' ticket.establishment.pk %}" class="btn btn--light btn--block">Voir l'établissement</a>
+        <a href="{% url 'my_tickets' %}" class="btn btn--ghost btn--block">Tous mes tickets</a>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endwith %}
+{% endblock %}

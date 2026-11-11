@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ establishment.name }} | SmartQueue Sénégal{% endblock %}
+{% block body_class %}has-mobile-cta{% endblock %}
+{% block content %}
+<div class="wrap">
+  <a class="back-link" href="{% url 'establishment_list' %}"><svg class="i"><use href="#i-arrow-left"/></svg>Tous les établissements</a>
+
+  <div class="detail">
+    <article class="card detail__main">
+      <div class="detail__hero">
+        {% include "partials/cat_icon.html" with cat=establishment.category size="lg" %}
+        <div>
+          <span class="tag">{{ establishment.get_category_display }}</span>
+          <h1>{{ establishment.name }}</h1>
+          <p class="detail__loc"><svg class="i"><use href="#i-pin"/></svg>{{ establishment.city }}{% if establishment.address %} · {{ establishment.address }}{% endif %}</p>
+        </div>
+      </div>
+
+      <p class="detail__desc">{{ establishment.description|default:"Bienvenue dans cet établissement. Prenez un ticket numérique pour rejoindre la file d'attente sans vous déplacer." }}</p>
+
+      <dl class="facts">
+        <div><dt><svg class="i"><use href="#i-pin"/></svg>Ville</dt><dd>{{ establishment.city }}</dd></div>
+        <div><dt><svg class="i"><use href="#i-building"/></svg>Adresse</dt><dd>{{ establishment.address|default:"Non renseignée" }}</dd></div>
+        <div><dt><svg class="i"><use href="#i-grid"/></svg>Catégorie</dt><dd>{{ establishment.get_category_display }}</dd></div>
+      </dl>
+
+      <h2 class="h3">Comment ça se passe</h2>
+      <ol class="mini-steps">
+        <li><span>1</span><div><strong>Prenez votre ticket</strong><p>Votre numéro est attribué immédiatement.</p></div></li>
+        <li><span>2</span><div><strong>Suivez votre position</strong><p>La page de votre ticket se met à jour automatiquement.</p></div></li>
+        <li><span>3</span><div><strong>Présentez-vous au guichet</strong><p>Quand votre ticket est appelé, c'est à vous.</p></div></li>
+      </ol>
+    </article>
+
+    <aside class="detail__aside">
+      <div class="card queue-card">
+        <div class="queue-card__head">
+          <span class="eyebrow">File d'attente</span>
+          <span class="live-tag"><span class="live-pill__dot"></span>En direct</span>
+        </div>
+        <div class="queue-card__count">
+          <strong>{{ waiting }}</strong>
+          <span>personne{{ waiting|pluralize }} en attente</span>
+        </div>
+        <div class="queue-dots" aria-hidden="true">
+          {% for i in "12345678"|make_list %}<span class="{% if forloop.counter <= waiting %}is-on{% endif %}"></span>{% endfor %}
+          <span class="queue-dots__you">Vous</span>
+        </div>
+        <p class="queue-card__hint">
+          {% if waiting %}Si vous prenez un ticket maintenant, vous serez <strong>{{ waiting|add:1 }}<sup>e</sup></strong> dans la file.
+          {% else %}Personne n'attend : vous serez <strong>le prochain</strong> appelé.{% endif %}
+        </p>
+        <form id="take-ticket" method="post">{% csrf_token %}
+          <button class="btn btn--primary btn--lg btn--block" type="submit"><svg class="i"><use href="#i-ticket"/></svg>Prendre un ticket</button>
+        </form>
+        {% if not user.is_authenticated %}
+          <p class="queue-card__note"><svg class="i"><use href="#i-lock"/></svg>Connexion requise. <a href="{% url 'login' %}?next={{ request.path|urlencode }}">Se connecter</a></p>
+        {% else %}
+          <p class="queue-card__note"><svg class="i"><use href="#i-shield"/></svg>Gratuit · Confirmation envoyée par e-mail</p>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="mobile-cta">
+  <div>
+    <strong>{{ waiting }} en attente</strong>
+    <small>{{ establishment.name }}</small>
+  </div>
+  <button class="btn btn--primary" type="submit" form="take-ticket"><svg class="i"><use href="#i-ticket"/></svg>Prendre un ticket</button>
+</div>
+{% endblock %}
